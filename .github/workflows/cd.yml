@@ -6,9 +6,9 @@ on:
     types:
       - completed
 
-  push:
-    branches:
-      - main
+#  push:
+#    branches:
+#      - main
 
 jobs:
   deploy:
@@ -27,21 +27,14 @@ jobs:
           service_account_key: ${{ secrets.GCP_SA_KEY }}
           export_default_credentials: true
 
-      - name: Set up Cloud SDK
-        uses: google-github-actions/setup-gcloud@v0.2.1
-        with:
-          project_id: ${{ secrets.GCP_PROJECT_ID }}
-          service_account_key: ${{ secrets.GCP_SA_KEY }}
-          export_default_credentials: true
+      - name: Build Docker image
+        run: docker build -t ${{ secrets.DOCKER_USERNAME }}/fastapi-app .
 
-#      - name: Build Docker image
-#        run: docker build -t ${{ secrets.DOCKER_USERNAME }}/fastapi-app .
-#
-#      - name: Login to Docker Hub
-#        run: echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
-#
-#      - name: Push to Docker Hub
-#        run: docker push ${{ secrets.DOCKER_USERNAME }}/fastapi-app
+      - name: Login to Docker Hub
+        run: echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
+
+      - name: Push to Docker Hub
+        run: docker push ${{ secrets.DOCKER_USERNAME }}/fastapi-app
 #
 #      - name: Deploy to Compute Engine
 #        run: |
