@@ -1,0 +1,52 @@
+name: 'Continuous Delivery'
+
+on:
+  workflow_run:
+    workflows: [ "Continuous Integration" ] # This should match the name of your CI workflow
+    types:
+      - completed
+
+jobs:
+  deploy:
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    name: Deploy to GCP Compute Engine
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Set up Cloud SDK
+        uses: google-github-actions/setup-gcloud@v0.2.1
+        with:
+          project_id: ${{ secrets.GCP_PROJECT_ID }}
+          service_account_key: ${{ secrets.GCP_SA_KEY }}
+          export_default_credentials: true
+
+      - name: Set up Cloud SDK
+        uses: google-github-actions/setup-gcloud@v0.2.1
+        with:
+          project_id: ${{ secrets.GCP_PROJECT_ID }}
+          service_account_key: ${{ secrets.GCP_SA_KEY }}
+          export_default_credentials: true
+
+#      - name: Build Docker image
+#        run: docker build -t ${{ secrets.DOCKER_USERNAME }}/fastapi-app .
+#
+#      - name: Login to Docker Hub
+#        run: echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
+#
+#      - name: Push to Docker Hub
+#        run: docker push ${{ secrets.DOCKER_USERNAME }}/fastapi-app
+#
+#      - name: Deploy to Compute Engine
+#        run: |
+#          gcloud compute ssh [YOUR_VM_NAME] --command="\
+#            docker stop \$(docker ps -q --filter ancestor=${{ secrets.DOCKER_USERNAME }}/fastapi-app) || true && \
+#            docker rm \$(docker ps -a -q --filter ancestor=${{ secrets.DOCKER_USERNAME }}/fastapi-app) || true && \
+#            docker pull ${{ secrets.DOCKER_USERNAME }}/fastapi-app && \
+#            docker run -d -p 80:8000 ${{ secrets.DOCKER_USERNAME }}/fastapi-app"
+
+      - name: Deploy to Cloud Run
+        run: |
+          gcloud run deploy fastapi-service --image docker.io/${{ secrets.DOCKER_USERNAME }}/fastapi-app --platform managed --region us-central1 --allow-unauthenticated
