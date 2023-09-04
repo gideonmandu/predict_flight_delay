@@ -81,6 +81,7 @@ async def post_predict(payload: Payload) -> dict:
         logger.error("Invalid TIPOVUELO value detected")
         raise HTTPException(status_code=400, detail="Invalid TIPOVUELO value.")
     try:
+        logger.info("Predicting delay for incoming flights")
         # Preprocess the data
         data_features = model_instance.preprocess(data=df)
         # Predict the delay
