@@ -168,5 +168,8 @@ class DelayModel:
 
     def load_model(self, filepath: str) -> None:
         """Load a trained model from disk."""
-        self._model = load(filepath)
-        logger.info(f"Model loaded from {filepath}")
+        try:
+            self._model = load(filepath)
+            logger.info(f"Model loaded from {filepath}")
+        except FileNotFoundError:
+            logger.info(f"Model not found in {filepath}")
