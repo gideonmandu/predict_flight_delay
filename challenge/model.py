@@ -95,11 +95,22 @@ class DelayModel:
             or
             pd.DataFrame: features.
         """
+        # Data validation
         # Check if necessary columns are present
         necessary_columns = ["OPERA", "TIPOVUELO", "MES"]
         for col in necessary_columns:
             if col not in data.columns:
                 raise ValueError(f"Missing necessary column: {col}")
+
+        # Check for incorrect data types
+        if data["MES"].dtype != np.int64:
+            raise TypeError(f"Column MES should be of type int64 but got {data['MES'].dtype}")
+
+        # Check for out-of-range values in MES column
+        if data["MES"].min() < 1 or data["MES"].max() > 12:
+            raise ValueError("MES value out of range")
+
+
         # Feature engineering
         if target_column:
             data["period_day"] = data["Fecha-I"].apply(self._get_period_day)

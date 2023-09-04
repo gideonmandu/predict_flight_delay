@@ -1,6 +1,8 @@
 import os
 import tempfile
 import unittest
+
+import numpy as np
 import pandas as pd
 
 from sklearn.metrics import classification_report
@@ -144,6 +146,13 @@ class TestModel(unittest.TestCase):
             with self.assertRaises(ValueError, msg="No model has been trained yet. Cannot save."):
                 self.model.save_model(filepath=temp_file.name)
 
+    def test_load_without_saving(self):
+        # Try loading the model without saving
+        with tempfile.NamedTemporaryFile(suffix=".joblib") as temp_file:
+            print(temp_file.name)
+            with self.assertRaises((FileNotFoundError, EOFError), msg=f"No such file or directory: {temp_file.name}"):
+                self.model.load_model(filepath=temp_file.name)
+
     def test_preprocess_with_all_necessary_columns(self):
         # Use a subset of the data with the necessary columns
         necessary_data = self.data[["OPERA", "TIPOVUELO", "MES"]].copy()
@@ -219,4 +228,44 @@ class TestModel(unittest.TestCase):
         }
         self.assertEqual(DelayModel._get_min_diff(data), -30.0)
 
+    def test_preprocess_missing_columns(self):
+        # Create mock data with missing columns
+        mock_data = self.data.drop(columns=["OPERA"])
 
+        # Check if an error is raised due to the missing columns
+        with self.assertRaises(ValueError, msg="Missing necessary column: OPERA"):
+            self.model.preprocess(data=mock_data)
+
+    def test_preprocess_incorrect_data_types(self):
+        # Change the data type of a column
+        self.data["MES"] = self.data["MES"].astype(str)
+
+        # Check if an error is raised due to incorrect data type
+        with self.assertRaises(TypeError):
+            self.model.preprocess(data=self.data)
+
+    def test_preprocess_out_of_range_values(self):
+        # Set an out-of-range value
+        self.data["MES"].iloc[0] = 15
+
+        # Check if an error is raised due to the out-of-range value
+        with self.assertRaises(ValueError, msg="MES value out of range"):
+            self.model.preprocess(data=self.data)
+
+    def test_preprocess_unseen_categorical_values(self):
+        # Set an unseen categorical value
+        self.data["OPERA"].iloc[0] = "Unknown Airline"
+
+        # Here, you might check if the preprocessing handles it correctly
+        # (e.g., it could ignore the value, or raise an error, depending on the desired behavior)
+        features = self.model.preprocess(data=self.data)
+        self.assertNotIn("OPERA_Unknown Airline", features.columns)
+
+    def test_preprocess_nan_values(self):
+        # Introduce NaN values in the dataframe
+        self.data["MES"].iloc[0] = np.nan
+
+        # Check how preprocessing handles NaN values
+        # (e.g., it could impute them, ignore them, or raise an error)
+        with self.assertRaises(TypeError, msg="Column MES should be of type int64 but got float64"):
+            self.model.preprocess(data=self.data)
