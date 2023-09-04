@@ -1,0 +1,44 @@
+name: 'Continuous Integration'
+
+on:
+  [push, pull_request]:
+    branches:
+      - main
+
+jobs:
+  build:
+    name: Build Docker Image and Run Tests
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+
+    - name: Build Docker image
+      run: docker build -t my_fastapi_app .
+
+    - name: Run Install Test Dependencies Tests
+      run: docker run my_fastapi_app make install
+
+    - name: Run Model Tests
+      run: docker run my_fastapi_app make model-test
+
+    - name: Run API Tests
+      run: docker run my_fastapi_app make api-test
+
+#    - name: Set up Python
+#        uses: actions/setup-python@v2
+#        with:
+#          python-version: '3.11'
+#
+#    - name: Install dependencies
+#      run: |
+#        python -m pip install --upgrade pip
+#        pip install -r requirements.txt
+#        pip install -r requirements-dev.txt
+#        pip install -r requirements-test.txt
+#
+#    - name: Run tests
+#      run: |
+#        make model-test
+#        make api-test
