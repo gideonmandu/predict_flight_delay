@@ -48,6 +48,7 @@ class Payload(BaseModel):
 class Prediction(BaseModel):
     predict: List[int]
 
+
 class ErrorResponse(BaseModel):
     detail: str
 
@@ -62,8 +63,8 @@ async def get_health() -> dict:
     status_code=status.HTTP_200_OK,
     response_model=Prediction,
     responses={
-            status.HTTP_400_BAD_REQUEST: {"model": ErrorResponse},
-        },
+        status.HTTP_400_BAD_REQUEST: {"model": ErrorResponse},
+    },
 )
 async def post_predict(payload: Payload) -> dict:
     """
