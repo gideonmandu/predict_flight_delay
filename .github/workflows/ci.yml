@@ -1,7 +1,11 @@
 name: 'Continuous Integration'
 
 on:
-  [push, pull_request]:
+  push:
+    branches:
+      - main
+
+  pull_request:
     branches:
       - main
 
@@ -16,9 +20,6 @@ jobs:
 
     - name: Build Docker image
       run: docker build -t my_fastapi_app .
-
-    - name: Run Install Test Dependencies Tests
-      run: docker run my_fastapi_app make install
 
     - name: Run Model Tests
       run: docker run my_fastapi_app make model-test
