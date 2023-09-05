@@ -29,5 +29,45 @@ I will be considering a combination of performance, interpretability, and potent
 
 # Modifications to model testing
 
+I have a modified the model testing process to include the following:
+
+```python
+base_dir = os.path.dirname(os.path.abspath(__file__))
+data_path = os.path.join(base_dir, 'data', 'data.csv')
+self.data = pd.read_csv(
+    filepath_or_buffer=data_path.replace('tests/model/', ''),
+    low_memory=False
+)
+```
+This helps load the test data from the correct path, regardless of where the test is run from.
+unlike the one below which is not flexible and will only work if the test is run from the root directory.
+
+```python
+self.data = pd.read_csv(filepath_or_buffer="../data/data.csv")       
+```
+
+I have also added more test cases to test other featured added to the model 
+class.
+
+
 
 # Modification to API testing
+
+I have a modified the API testing process to include the following:
+
+```python
+with patch("xgboost.XGBClassifier.predict", return_value=np.array([0])):
+```
+
+This created a mock of the predict method of the XGBClassifier class and returns a numpy array of 0s. This is to ensure that the API test is not dependent on the model's prediction.
+
+I also added other tests to test other features added to the API implementation.
+
+# Deployment
+
+Deployment was done using Google Cloud Run. The following steps were taken:
+setting up a service account that serve the ci cd pipeline, creating a docker 
+image, pushing the image to docker hub, and deploying the image to Cloud Run.
+
+Due to cloud runs default security features the stress test experienced a 
+restriction due to too many request from one IP address.
